@@ -28,19 +28,33 @@ const validate = (inputValue) => {
 };
 
 const getCoordinates = async (inputValue) => {
-  const response = await fetch(
-    `http://api.openweathermap.org/geo/1.0/direct?q=${inputValue}&limit=1&appid=${API_KEY}`
-  );
-  const data = await response.json();
-  return data[0];
+  try {
+    const response = await fetch(
+      `http://api.openweathermap.org/geo/1.0/direct?q=${inputValue}&limit=1&appid=${API_KEY}`
+    );
+    if (!response.ok) {
+      throw new Error("Couldn't fetch coordinates");
+    }
+    const data = await response.json();
+    return data[0];
+  } catch {
+    throw new Error("Couldn't fetch coordinates");
+  }
 };
 
 const getWeather = async (lat, lon) => {
-  const response = await fetch(
-    `https://api.openweathermap.org/data/3.0/onecall?lat=${lat}&lon=${lon}&appid=${API_KEY}`
-  );
-  const data = await response.json();
-  return data.daily;
+  try {
+    const response = await fetch(
+      `https://api.openweathermap.org/data/3.0/onecall?lat=${lat}&lon=${lon}&appid=${API_KEY}`
+    );
+    if (!response.ok) {
+      throw new Error("Couldn't fetch weather");
+    }
+    const data = await response.json();
+    return data.daily;
+  } catch {
+    throw new Error("Couldn't fetch weather");
+  }
 };
 
 const addWeather = (dailyWeather) => {
@@ -61,9 +75,13 @@ const submitHandler = async (event) => {
     alert("Please input valid value");
     return;
   }
-  const coordinates = await getCoordinates(inputValue);
-  const dailyWeather = await getWeather(coordinates.lat, coordinates.lon);
-  addWeather(dailyWeather);
+  try {
+    const coordinates = await getCoordinates(inputValue);
+    const dailyWeather = await getWeather(coordinates.lat, coordinates.lon);
+    addWeather(dailyWeather);
+  } catch (err) {
+    alert(err.message);
+  }
   loadingText.style.display = "none";
 };
 
